@@ -1,0 +1,118 @@
+@model SanPhamChiTietViewModel
+@{
+    ViewData["Title"] = Model.SanPham.TenSP;
+    var sp = Model.SanPham;
+    var maus = Model.BienThes.GroupBy(b => b.MaMau).Select(g => g.First()).ToList();
+    var sizes = Model.BienThes.GroupBy(b => b.MaSize).Select(g => g.First()).ToList();
+    var bienTheJson = System.Text.Json.JsonSerializer.Serialize(
+        Model.BienThes.Select(b => new { maBT = b.MaBT, maMau = b.MaMau, maSize = b.MaSize, ton = b.SoLuongTon }));
+    var dangNhap = User.Identity?.IsAuthenticated == true;
+}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Shop" asp-action="Index">Cửa hàng</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Shop" asp-action="Index" asp-route-maDM="@sp.MaDM">@Model.TenDM</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@sp.TenSP</li>
+    </ol>
+</nav>
+
+@if (Model.DaAn)
+{
+    <div class="alert alert-warning"><i class="bi bi-eye-slash"></i> Sản phẩm này đang bị ẩn. Chỉ Admin và Staff nhìn thấy trang này.</div>
+}
+
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="detail-image">
+            @if (!string.IsNullOrWhiteSpace(sp.AnhDaiDien))
+            {
+                <img src="@sp.AnhDaiDien" alt="@sp.TenSP" />
+            }
+            else
+            {
+                <div class="thumb-placeholder big">@(sp.TenSP.Length > 0 ? sp.TenSP.Substring(0, 1) : "?")</div>
+            }
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="mb-2">
+            @if (sp.LaNoiBat) { <span class="badge bg-danger">Hot</span> }
+            @if (sp.NgayTao >= DateTime.Now.AddDays(-30)) { <span class="badge bg-success">Mới</span> }
+            @if (!Model.ConHang) { <span class="badge bg-secondary">Hết hàng</span> }
+        </div>
+        <h1 class="h2">@sp.TenSP</h1>
+        <div class="price big mb-3">@Money.Vnd(sp.GiaBan)</div>
+        @if (!string.IsNullOrWhiteSpace(sp.MoTa))
+        {
+            <p class="text-body-secondary">@sp.MoTa</p>
+        }
+
+        @if (Model.BienThes.Count == 0)
+        {
+            <div class="alert alert-secondary">Sản phẩm chưa có biến thể để bán.</div>
+        }
+        else
+        {
+            <form method="post" asp-controller="Cart" asp-action="Add" id="addToCartForm" data-variants="@bienTheJson">
+                <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                <input type="hidden" name="maBT" id="maBT" value="" />
+
+                <div class="mb-3">
+                    <div class="fw-semibold mb-2">Màu sắc</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var m in maus)
+                        {
+                            <input type="radio" class="btn-check variant-mau" name="mau" id="mau-@m.MaMau" value="@m.MaMau" autocomplete="off" />
+                            <label class="swatch-label" for="mau-@m.MaMau">
+                                <span class="swatch" style="background:@Css.Hex(m.MaHex)"></span> @m.TenMau
+                            </label>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="fw-semibold mb-2">Kích cỡ</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var s in sizes)
+                        {
+                            <input type="radio" class="btn-check variant-size" name="size" id="size-@s.MaSize" value="@s.MaSize" autocomplete="off" />
+                            <label class="btn btn-outline-dark btn-sm size-btn" for="size-@s.MaSize">@s.TenSize</label>
+                        }
+                    </div>
+                </div>
+
+                <div id="stockInfo" class="small text-muted mb-3">Chọn màu và kích cỡ để xem tồn kho.</div>
+
+                @if (dangNhap && Model.ConHang && !Model.DaAn)
+                {
+                    <div class="d-flex gap-2 align-items-center">
+                        <input type="number" name="soLuong" id="soLuong" class="form-control qty-input" value="1" min="1" max="99" aria-label="Số lượng" />
+                        <button type="submit" id="addBtn" class="btn btn-primary btn-lg" disabled><i class="bi bi-cart-plus"></i> Thêm vào giỏ</button>
+                    </div>
+                }
+                else if (!dangNhap)
+                {
+                    <a class="btn btn-primary btn-lg" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path">Đăng nhập để mua hàng</a>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-secondary btn-lg" disabled>Không thể đặt mua</button>
+                }
+            </form>
+        }
+    </div>
+</div>
+
+@if (Model.LienQuan.Count > 0)
+{
+    <section class="mt-5">
+        <h2 class="h5 mb-3">Sản phẩm liên quan</h2>
+        <div class="row row-cols-2 row-cols-md-4 g-3">
+            @foreach (var p in Model.LienQuan)
+            {
+                <div class="col"><partial name="_ProductCard" model="p" /></div>
+            }
+        </div>
+    </section>
+}

@@ -1,0 +1,120 @@
+@model ShopIndexViewModel
+@{
+    ViewData["Title"] = "Cửa hàng";
+    var c = Model.Criteria;
+    var r = Model.Result;
+    string PageUrl(int p) => Url.Action("Index", "Shop", new
+    {
+        q = c.Q,
+        maDM = c.MaDM,
+        giaTu = c.GiaTu,
+        giaDen = c.GiaDen,
+        loai = c.Loai,
+        chiConHang = c.ChiConHang ? "true" : null,
+        sort = c.Sort,
+        page = p
+    })!;
+}
+<h1 class="h3 mb-3">Cửa hàng</h1>
+
+<form method="get" asp-controller="Shop" asp-action="Index" class="filter-bar mb-4">
+    <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+            <label class="form-label small mb-1" for="f-q">Từ khóa</label>
+            <input id="f-q" name="q" value="@c.Q" class="form-control" placeholder="Tên sản phẩm" />
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label small mb-1" for="f-dm">Danh mục</label>
+            <select id="f-dm" name="maDM" class="form-select">
+                <option value="">Tất cả</option>
+                @foreach (var d in Model.DanhMucs)
+                {
+                    <option value="@d.Id" selected="@(c.MaDM == d.Id)">@d.Ten</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label small mb-1" for="f-loai">Loại</label>
+            <select id="f-loai" name="loai" class="form-select">
+                <option value="">Tất cả</option>
+                <option value="hot" selected="@(c.Loai == "hot")">Hot</option>
+                <option value="new" selected="@(c.Loai == "new")">Mới</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label small mb-1" for="f-gt">Giá từ</label>
+            <input id="f-gt" name="giaTu" type="number" min="0" step="1000" value="@c.GiaTu" class="form-control" />
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label small mb-1" for="f-gd">Giá đến</label>
+            <input id="f-gd" name="giaDen" type="number" min="0" step="1000" value="@c.GiaDen" class="form-control" />
+        </div>
+        <div class="col-6 col-md-3">
+            <label class="form-label small mb-1" for="f-sort">Sắp xếp</label>
+            <select id="f-sort" name="sort" class="form-select">
+                @foreach (var s in ProductSearchCriteria.SortOptions)
+                {
+                    <option value="@s.Value" selected="@(c.Sort == s.Value)">@s.Label</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="f-ton" name="chiConHang" value="true" checked="@c.ChiConHang" />
+                <label class="form-check-label" for="f-ton">Chỉ còn hàng</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 d-flex gap-2 justify-content-md-end">
+            <a class="btn btn-outline-secondary" asp-controller="Shop" asp-action="Index">Xóa lọc</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Áp dụng</button>
+        </div>
+    </div>
+</form>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="text-muted">Tìm thấy <strong>@r.TotalItems</strong> sản phẩm</div>
+    @if (r.TotalPages > 1)
+    {
+        <div class="text-muted small">Trang @r.Page / @r.TotalPages</div>
+    }
+</div>
+
+@if (r.Items.Count == 0)
+{
+    <div class="empty-state">
+        <i class="bi bi-search"></i>
+        <h2 class="h5 mt-2">Không tìm thấy sản phẩm phù hợp</h2>
+        <p class="text-muted mb-3">Hãy thử đổi từ khóa hoặc bỏ bớt điều kiện lọc.</p>
+        <a class="btn btn-primary" asp-controller="Shop" asp-action="Index">Xem tất cả sản phẩm</a>
+    </div>
+}
+else
+{
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+        @foreach (var p in r.Items)
+        {
+            <div class="col"><partial name="_ProductCard" model="p" /></div>
+        }
+    </div>
+
+    @if (r.TotalPages > 1)
+    {
+        var start = Math.Max(1, r.Page - 2);
+        var end = Math.Min(r.TotalPages, start + 4);
+        start = Math.Max(1, end - 4);
+        <nav class="mt-4" aria-label="Phân trang">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(r.Page == 1 ? "disabled" : "")">
+                    <a class="page-link" href="@PageUrl(Math.Max(1, r.Page - 1))" aria-label="Trang trước">&laquo;</a>
+                </li>
+                @for (var p = start; p <= end; p++)
+                {
+                    <li class="page-item @(p == r.Page ? "active" : "")"><a class="page-link" href="@PageUrl(p)">@p</a></li>
+                }
+                <li class="page-item @(r.Page == r.TotalPages ? "disabled" : "")">
+                    <a class="page-link" href="@PageUrl(Math.Min(r.TotalPages, r.Page + 1))" aria-label="Trang sau">&raquo;</a>
+                </li>
+            </ul>
+        </nav>
+    }
+}

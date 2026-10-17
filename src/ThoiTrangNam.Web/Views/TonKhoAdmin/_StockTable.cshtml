@@ -1,0 +1,24 @@
+@model List<StockAlertItem>
+<div class="table-responsive">
+    <table class="table table-sm table-hover align-middle">
+        <thead>
+            <tr><th>Sản phẩm</th><th>SKU</th><th>Màu</th><th>Size</th><th class="text-end">Tồn kho</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var it in Model)
+            {
+                <tr>
+                    <td>
+                        @it.TenSP
+                        @if (!it.SanPhamDangBan) { <span class="badge bg-secondary ms-1">Đang ẩn</span> }
+                    </td>
+                    <td><code>@it.SKU</code></td>
+                    <td>@it.TenMau</td>
+                    <td>@it.TenSize</td>
+                    <td class="text-end fw-semibold @(it.SoLuongTon <= 0 ? "text-danger" : "text-warning-emphasis")">@it.SoLuongTon</td>
+                    <td class="text-end"><a class="btn btn-sm btn-outline-primary" asp-controller="SanPhamAdmin" asp-action="Edit" asp-route-id="@it.MaSP">Cập nhật tồn kho</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

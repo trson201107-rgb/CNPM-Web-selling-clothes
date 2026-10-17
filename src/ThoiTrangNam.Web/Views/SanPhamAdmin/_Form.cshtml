@@ -1,0 +1,138 @@
+@model SanPhamFormViewModel
+<div asp-validation-summary="All" class="alert alert-danger"></div>
+<input type="hidden" asp-for="MaSP" />
+
+<div class="card mb-4">
+    <div class="card-header fw-semibold">Thông tin sản phẩm</div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-8">
+                <label asp-for="TenSP" class="form-label">Tên sản phẩm</label>
+                <input asp-for="TenSP" class="form-control" maxlength="150" />
+                <span asp-validation-for="TenSP" class="text-danger small"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="GiaBan" class="form-label">Giá bán (₫)</label>
+                <input asp-for="GiaBan" type="number" min="0" step="1000" class="form-control" />
+                <span asp-validation-for="GiaBan" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="MaDM" class="form-label">Danh mục</label>
+                <select asp-for="MaDM" class="form-select">
+                    <option value="0">-- Chọn danh mục --</option>
+                    @foreach (var d in Model.DanhMucs)
+                    {
+                        <option value="@d.Id">@d.Ten</option>
+                    }
+                </select>
+                <span asp-validation-for="MaDM" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="AnhDaiDien" class="form-label">Đường dẫn ảnh (URL)</label>
+                <input asp-for="AnhDaiDien" class="form-control" maxlength="255" placeholder="https://..." />
+                <span asp-validation-for="AnhDaiDien" class="text-danger small"></span>
+            </div>
+            <div class="col-12">
+                <label asp-for="MoTa" class="form-label">Mô tả</label>
+                <textarea asp-for="MoTa" class="form-control" rows="3" maxlength="1000"></textarea>
+                <span asp-validation-for="MoTa" class="text-danger small"></span>
+            </div>
+            <div class="col-12">
+                <div class="form-check">
+                    <input asp-for="LaNoiBat" class="form-check-input" />
+                    <label asp-for="LaNoiBat" class="form-check-label">Sản phẩm nổi bật (Hot)</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Biến thể (màu + size) và tồn kho</span>
+        <button type="button" id="addVariantBtn" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg"></i> Thêm biến thể</button>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr><th style="min-width:170px">SKU</th><th>Màu</th><th>Size</th><th style="width:120px">Tồn kho</th><th class="text-center" style="width:90px">Xóa</th></tr>
+            </thead>
+            <tbody id="variantRows">
+                @for (var i = 0; i < Model.BienThes.Count; i++)
+                {
+                    var b = Model.BienThes[i];
+                    <tr class="variant-row">
+                        <td>
+                            <input type="hidden" name="BienThes[@i].MaBT" value="@b.MaBT" />
+                            <input name="BienThes[@i].SKU" value="@b.SKU" maxlength="30" class="form-control form-control-sm" />
+                        </td>
+                        <td>
+                            <select name="BienThes[@i].MaMau" class="form-select form-select-sm">
+                                <option value="0">Chọn màu</option>
+                                @foreach (var m in Model.Maus)
+                                {
+                                    <option value="@m.Id" selected="@(b.MaMau == m.Id)">@m.Ten</option>
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            <select name="BienThes[@i].MaSize" class="form-select form-select-sm">
+                                <option value="0">Chọn size</option>
+                                @foreach (var s in Model.Sizes)
+                                {
+                                    <option value="@s.Id" selected="@(b.MaSize == s.Id)">@s.Ten</option>
+                                }
+                            </select>
+                        </td>
+                        <td><input type="number" min="0" name="BienThes[@i].SoLuongTon" value="@b.SoLuongTon" class="form-control form-control-sm" /></td>
+                        <td class="text-center">
+                            @if (b.MaBT > 0)
+                            {
+                                <input type="checkbox" class="form-check-input" name="BienThes[@i].Xoa" value="true" checked="@b.Xoa" title="Đánh dấu để xóa biến thể khi lưu" />
+                                <input type="hidden" name="BienThes[@i].Xoa" value="false" />
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-danger js-remove-row" aria-label="Gỡ dòng"><i class="bi bi-x-lg"></i></button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer small text-muted">
+        Không tạo trùng màu + size hoặc SKU. Biến thể đã có trong đơn hàng không thể xóa, hãy đặt tồn kho về 0.
+    </div>
+</div>
+
+<template id="variantTemplate">
+    <tr class="variant-row">
+        <td>
+            <input type="hidden" name="BienThes[__I__].MaBT" value="0" />
+            <input name="BienThes[__I__].SKU" value="" maxlength="30" class="form-control form-control-sm" />
+        </td>
+        <td>
+            <select name="BienThes[__I__].MaMau" class="form-select form-select-sm">
+                <option value="0">Chọn màu</option>
+                @foreach (var m in Model.Maus)
+                {
+                    <option value="@m.Id">@m.Ten</option>
+                }
+            </select>
+        </td>
+        <td>
+            <select name="BienThes[__I__].MaSize" class="form-select form-select-sm">
+                <option value="0">Chọn size</option>
+                @foreach (var s in Model.Sizes)
+                {
+                    <option value="@s.Id">@s.Ten</option>
+                }
+            </select>
+        </td>
+        <td><input type="number" min="0" name="BienThes[__I__].SoLuongTon" value="0" class="form-control form-control-sm" /></td>
+        <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-danger js-remove-row" aria-label="Gỡ dòng"><i class="bi bi-x-lg"></i></button>
+        </td>
+    </tr>
+</template>

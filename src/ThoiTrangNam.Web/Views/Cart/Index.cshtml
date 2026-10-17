@@ -1,0 +1,84 @@
+@model CartViewModel
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+<h1 class="h3 mb-3">Giỏ hàng của bạn</h1>
+
+@if (Model.Lines.Count == 0)
+{
+    <div class="empty-state">
+        <i class="bi bi-cart-x"></i>
+        <h2 class="h5 mt-2">Giỏ hàng đang trống</h2>
+        <p class="text-muted mb-3">Hãy chọn vài món bạn thích nhé.</p>
+        <a class="btn btn-primary" asp-controller="Shop" asp-action="Index">Đi mua sắm</a>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle cart-table">
+            <thead>
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th class="text-end">Đơn giá</th>
+                    <th style="width:190px">Số lượng</th>
+                    <th class="text-end">Thành tiền</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var l in Model.Lines)
+                {
+                    <tr class="@(l.DangBan ? "" : "table-secondary")">
+                        <td>
+                            <div class="d-flex gap-3 align-items-center">
+                                <div class="cart-thumb">
+                                    @if (!string.IsNullOrWhiteSpace(l.AnhDaiDien))
+                                    {
+                                        <img src="@l.AnhDaiDien" alt="@l.TenSP" />
+                                    }
+                                    else
+                                    {
+                                        <div class="thumb-placeholder">@(l.TenSP.Length > 0 ? l.TenSP.Substring(0, 1) : "?")</div>
+                                    }
+                                </div>
+                                <div>
+                                    <a asp-controller="SanPham" asp-action="Details" asp-route-id="@l.MaSP" class="fw-semibold text-decoration-none">@l.TenSP</a>
+                                    <div class="small text-muted">@l.TenMau, size @l.TenSize (@l.SKU)</div>
+                                    @if (!l.DangBan)
+                                    {
+                                        <div class="small text-danger">Sản phẩm đã ngừng bán, không tính vào tổng tiền.</div>
+                                    }
+                                    else if (l.VuotTon)
+                                    {
+                                        <div class="small text-danger">Chỉ còn @l.SoLuongTon sản phẩm, hãy giảm số lượng.</div>
+                                    }
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-end">@Money.Vnd(l.GiaBan)</td>
+                        <td>
+                            <form method="post" asp-controller="Cart" asp-action="Update" class="d-flex gap-2">
+                                <input type="hidden" name="maBT" value="@l.MaBT" />
+                                <input type="number" name="soLuong" value="@l.SoLuong" min="1" max="99" class="form-control form-control-sm qty-input" aria-label="Số lượng" />
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Cập nhật</button>
+                            </form>
+                        </td>
+                        <td class="text-end fw-semibold">@Money.Vnd(l.ThanhTien)</td>
+                        <td class="text-end">
+                            <form method="post" asp-controller="Cart" asp-action="Remove" data-confirm="Xóa sản phẩm này khỏi giỏ hàng?">
+                                <input type="hidden" name="maBT" value="@l.MaBT" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Xóa"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex flex-column align-items-end gap-2">
+        <div class="fs-5">Tổng cộng: <strong class="price">@Money.Vnd(Model.TongTien)</strong></div>
+        <button type="button" class="btn btn-secondary" disabled>Thanh toán (sẽ có ở Sprint 3)</button>
+    </div>
+}
