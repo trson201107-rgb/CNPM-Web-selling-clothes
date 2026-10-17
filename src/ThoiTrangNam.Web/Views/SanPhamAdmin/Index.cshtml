@@ -1,0 +1,108 @@
+@model List<SanPhamAdminItem>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản lý sản phẩm";
+    var q = ViewData["q"] as string;
+    var tt = ViewData["trangThai"] as string;
+    var laAdmin = User.IsInRole("Admin");
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h3 mb-0">Sản phẩm</h1>
+    <a class="btn btn-primary" asp-controller="SanPhamAdmin" asp-action="Create"><i class="bi bi-plus-lg"></i> Thêm sản phẩm</a>
+</div>
+
+<form method="get" asp-controller="SanPhamAdmin" asp-action="Index" class="filter-bar mb-3">
+    <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-6">
+            <label class="form-label small mb-1" for="aq">Tìm theo tên</label>
+            <input id="aq" name="q" value="@q" class="form-control" />
+        </div>
+        <div class="col-6 col-md-3">
+            <label class="form-label small mb-1" for="att">Trạng thái</label>
+            <select id="att" name="trangThai" class="form-select">
+                <option value="">Tất cả</option>
+                <option value="@TrangThaiSanPham.DangBan" selected="@(tt == TrangThaiSanPham.DangBan)">Đang bán</option>
+                <option value="@TrangThaiSanPham.NgungBan" selected="@(tt == TrangThaiSanPham.NgungBan)">Đã ẩn</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Lọc</button>
+            <a class="btn btn-outline-secondary" asp-controller="SanPhamAdmin" asp-action="Index">Xóa lọc</a>
+        </div>
+    </div>
+</form>
+
+@if (Model.Count == 0)
+{
+    <div class="empty-state">
+        <i class="bi bi-box"></i>
+        <h2 class="h5 mt-2">Không có sản phẩm nào</h2>
+        <a class="btn btn-primary mt-2" asp-controller="SanPhamAdmin" asp-action="Create">Thêm sản phẩm đầu tiên</a>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Mã</th><th>Sản phẩm</th><th>Danh mục</th><th class="text-end">Giá</th>
+                    <th class="text-end">Tồn</th><th>Trạng thái</th><th>Cập nhật</th><th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var it in Model)
+                {
+                    <tr class="@(it.DangBan ? "" : "table-secondary")">
+                        <td>@it.MaSP</td>
+                        <td>
+                            <a asp-controller="SanPhamAdmin" asp-action="Edit" asp-route-id="@it.MaSP" class="fw-semibold text-decoration-none">@it.TenSP</a>
+                            @if (it.LaNoiBat) { <span class="badge bg-danger ms-1">Hot</span> }
+                            <div class="small text-muted">@it.SoBienThe biến thể</div>
+                        </td>
+                        <td>@it.TenDM</td>
+                        <td class="text-end">@Money.Vnd(it.GiaBan)</td>
+                        <td class="text-end @(it.TongTon <= 0 ? "text-danger fw-semibold" : "")">@it.TongTon</td>
+                        <td>
+                            @if (it.DangBan) { <span class="badge bg-success">Đang bán</span> }
+                            else { <span class="badge bg-secondary">Đã ẩn</span> }
+                        </td>
+                        <td class="small text-muted">
+                            @if (it.NgayCapNhat.HasValue)
+                            {
+                                <div>@it.NgayCapNhat.Value.ToString("dd/MM/yyyy HH:mm")</div>
+                                <div>@(it.NguoiCapNhatTen ?? "")</div>
+                            }
+                            else
+                            {
+                                <div>Tạo @it.NgayTao.ToString("dd/MM/yyyy")</div>
+                            }
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-secondary" asp-controller="SanPham" asp-action="Details" asp-route-id="@it.MaSP" title="Xem như khách"><i class="bi bi-eye"></i></a>
+                            <a class="btn btn-sm btn-outline-primary" asp-controller="SanPhamAdmin" asp-action="Edit" asp-route-id="@it.MaSP" title="Sửa"><i class="bi bi-pencil"></i></a>
+                            @if (it.DangBan)
+                            {
+                                <form method="post" asp-controller="SanPhamAdmin" asp-action="Hide" asp-route-id="@it.MaSP" class="d-inline" data-confirm="Ẩn sản phẩm này? Khách sẽ không còn thấy.">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning" title="Ẩn"><i class="bi bi-eye-slash"></i></button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form method="post" asp-controller="SanPhamAdmin" asp-action="Show" asp-route-id="@it.MaSP" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Hiện lại"><i class="bi bi-eye"></i></button>
+                                </form>
+                            }
+                            @if (laAdmin)
+                            {
+                                <form method="post" asp-controller="SanPhamAdmin" asp-action="Delete" asp-route-id="@it.MaSP" class="d-inline" data-confirm="XÓA HẲN sản phẩm này khỏi hệ thống? Không thể hoàn tác.">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa hẳn"><i class="bi bi-trash"></i></button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

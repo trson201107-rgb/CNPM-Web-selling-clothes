@@ -1,0 +1,63 @@
+@model HomeViewModel
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+<section class="hero mb-5">
+    <div class="hero-inner">
+        <h1 class="display-5 fw-bold">Thời trang nam thường nhật</h1>
+        <p class="lead mb-4">Gọn gàng, dễ phối, mặc thoải mái mỗi ngày.</p>
+        <a class="btn btn-light btn-lg" asp-controller="Shop" asp-action="Index">Mua sắm ngay <i class="bi bi-arrow-right"></i></a>
+    </div>
+</section>
+
+@if (Model.DanhMucs.Count > 0)
+{
+    <section class="mb-5">
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (var d in Model.DanhMucs)
+            {
+                <a class="chip" asp-controller="Shop" asp-action="Index" asp-route-maDM="@d.Id">@d.Ten</a>
+            }
+        </div>
+    </section>
+}
+
+<section class="mb-5">
+    <div class="section-head">
+        <h2 class="h4 mb-0"><i class="bi bi-fire text-danger"></i> Sản phẩm nổi bật</h2>
+        <a asp-controller="Shop" asp-action="Index" asp-route-loai="hot">Xem tất cả</a>
+    </div>
+    @if (Model.Hot.Count == 0)
+    {
+        <p class="text-muted">Chưa có sản phẩm nổi bật.</p>
+    }
+    else
+    {
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+            @foreach (var p in Model.Hot)
+            {
+                <div class="col"><partial name="_ProductCard" model="p" /></div>
+            }
+        </div>
+    }
+</section>
+
+<section class="mb-4">
+    <div class="section-head">
+        <h2 class="h4 mb-0"><i class="bi bi-stars text-success"></i> Hàng mới về</h2>
+        <a asp-controller="Shop" asp-action="Index" asp-route-loai="new">Xem tất cả</a>
+    </div>
+    @if (Model.New.Count == 0)
+    {
+        <p class="text-muted">Chưa có sản phẩm mới.</p>
+    }
+    else
+    {
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+            @foreach (var p in Model.New)
+            {
+                <div class="col"><partial name="_ProductCard" model="p" /></div>
+            }
+        </div>
+    }
+</section>

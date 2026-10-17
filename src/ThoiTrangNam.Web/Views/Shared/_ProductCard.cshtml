@@ -1,0 +1,23 @@
+@model ProductListItem
+<div class="card product-card h-100">
+    <a asp-controller="SanPham" asp-action="Details" asp-route-id="@Model.MaSP" class="product-thumb" aria-label="@Model.TenSP">
+        @if (!string.IsNullOrWhiteSpace(Model.AnhDaiDien))
+        {
+            <img src="@Model.AnhDaiDien" alt="@Model.TenSP" loading="lazy" />
+        }
+        else
+        {
+            <div class="thumb-placeholder">@(Model.TenSP.Length > 0 ? Model.TenSP.Substring(0, 1) : "?")</div>
+        }
+        <div class="badges">
+            @if (Model.LaNoiBat) { <span class="badge bg-danger">Hot</span> }
+            @if (Model.LaMoi) { <span class="badge bg-success">Mới</span> }
+            @if (Model.HetHang) { <span class="badge bg-secondary">Hết hàng</span> }
+        </div>
+    </a>
+    <div class="card-body">
+        <div class="text-muted small">@Model.TenDM</div>
+        <a asp-controller="SanPham" asp-action="Details" asp-route-id="@Model.MaSP" class="product-title">@Model.TenSP</a>
+        <div class="price mt-1">@Money.Vnd(Model.GiaBan)</div>
+    </div>
+</div>

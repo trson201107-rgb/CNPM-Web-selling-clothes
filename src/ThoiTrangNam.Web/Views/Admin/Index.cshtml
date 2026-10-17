@@ -1,0 +1,37 @@
+@model DashboardStats
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản trị";
+}
+<h1 class="h3 mb-4">Tổng quan</h1>
+<div class="row g-3">
+    <div class="col-6 col-xl-3">
+        <a class="stat-card" asp-controller="SanPhamAdmin" asp-action="Index">
+            <i class="bi bi-box-seam"></i>
+            <div class="stat-num">@Model.SoSanPham</div>
+            <div class="stat-label">Sản phẩm</div>
+        </a>
+    </div>
+    <div class="col-6 col-xl-3">
+        <a class="stat-card" asp-controller="SanPhamAdmin" asp-action="Index" asp-route-trangThai="@TrangThaiSanPham.NgungBan">
+            <i class="bi bi-eye-slash"></i>
+            <div class="stat-num">@Model.SoSanPhamAn</div>
+            <div class="stat-label">Sản phẩm đang ẩn</div>
+        </a>
+    </div>
+    <div class="col-6 col-xl-3">
+        <a class="stat-card" asp-controller="DanhMucAdmin" asp-action="Index">
+            <i class="bi bi-tags"></i>
+            <div class="stat-num">@Model.SoDanhMuc</div>
+            <div class="stat-label">Danh mục</div>
+        </a>
+    </div>
+    <div class="col-6 col-xl-3">
+        <a class="stat-card warn" asp-controller="TonKhoAdmin" asp-action="Index">
+            <i class="bi bi-exclamation-triangle"></i>
+            <div class="stat-num">@(Model.SoBienTheHetHang + Model.SoBienTheSapHet)</div>
+            <div class="stat-label">Biến thể hết / sắp hết hàng</div>
+        </a>
+    </div>
+</div>
+<p class="text-muted mt-4 mb-0">Sắp hết hàng: tồn kho từ 1 đến @Model.NguongSapHet. Hết hàng: tồn kho bằng 0.</p>

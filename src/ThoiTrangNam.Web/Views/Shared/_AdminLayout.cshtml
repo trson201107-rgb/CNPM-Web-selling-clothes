@@ -1,0 +1,25 @@
+@{
+    Layout = "_Layout";
+    var ctl = ViewContext.RouteData.Values["controller"]?.ToString();
+    string Act(string name) => string.Equals(ctl, name, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+}
+<div class="row g-4">
+    <aside class="col-lg-3 col-xl-2">
+        <div class="admin-side">
+            <div class="admin-side-title">Quản trị</div>
+            <nav class="nav flex-lg-column">
+                <a class="nav-link @Act("Admin")" asp-controller="Admin" asp-action="Index"><i class="bi bi-speedometer2"></i> Tổng quan</a>
+                <a class="nav-link @Act("SanPhamAdmin")" asp-controller="SanPhamAdmin" asp-action="Index"><i class="bi bi-box-seam"></i> Sản phẩm</a>
+                <a class="nav-link @Act("DanhMucAdmin")" asp-controller="DanhMucAdmin" asp-action="Index"><i class="bi bi-tags"></i> Danh mục</a>
+                <a class="nav-link @Act("TonKhoAdmin")" asp-controller="TonKhoAdmin" asp-action="Index"><i class="bi bi-exclamation-triangle"></i> Cảnh báo tồn kho</a>
+            </nav>
+        </div>
+    </aside>
+    <section class="col-lg-9 col-xl-10">
+        @RenderBody()
+    </section>
+</div>
+
+@section Scripts {
+    @await RenderSectionAsync("Scripts", required: false)
+}

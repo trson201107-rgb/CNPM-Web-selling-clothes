@@ -1,0 +1,13 @@
+@model DanhMuc
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Thêm danh mục";
+}
+<h1 class="h3 mb-3">Thêm danh mục</h1>
+<form method="post" asp-controller="DanhMucAdmin" asp-action="Create" class="form-narrow">
+    <partial name="_Form" model="Model" />
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <a class="btn btn-outline-secondary" asp-controller="DanhMucAdmin" asp-action="Index">Hủy</a>
+    </div>
+</form>
